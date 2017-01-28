@@ -3,7 +3,7 @@ import {
   AppRegistry
 } from 'react-native';
 
-import Orb from "./js/orb";
+import Root from "./js/containers/root";
 
 
-AppRegistry.registerComponent('orb', () => Orb);
+AppRegistry.registerComponent('orb', () => Root);
