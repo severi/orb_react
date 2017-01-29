@@ -6,6 +6,7 @@
 
 export const ADD_PERSON = 'ADD_PERSON'
 
+
 /*
  * action creators
  */
@@ -13,7 +14,7 @@ export const ADD_PERSON = 'ADD_PERSON'
 let nextPersonId = 0
 export const addPerson = (name : string) => {
   return {
-    type: 'ADD_PERSON',
+    type: ADD_PERSON,
     id: nextPersonId++,
     name
   }
