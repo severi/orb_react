@@ -1,3 +1,5 @@
+/* @flow */
+
 import React, { Component, PropTypes } from 'react';
 import {
   StyleSheet,
@@ -7,9 +9,7 @@ import {
   Button
 } from 'react-native';
 
-
 export default class PersonsMap extends Component {
-
   render() {
     return (
       <View style={styles.container}>
@@ -40,7 +40,7 @@ export default class PersonsMap extends Component {
 
 PersonsMap.propTypes = {
   persons: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
   })),
   onButtonClick: PropTypes.func.isRequired,
