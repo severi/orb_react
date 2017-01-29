@@ -46,12 +46,16 @@ PersonsMap.propTypes = {
   onButtonClick: PropTypes.func.isRequired,
 };
 
+
+let containerBackground = "#F5FCFF";
+let instructionsColor = "#333333";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: containerBackground,
   },
   welcome: {
     fontSize: 20,
@@ -60,7 +64,7 @@ const styles = StyleSheet.create({
   },
   instructions: {
     textAlign: 'center',
-    color: '#333333',
+    color: instructionsColor,
     marginBottom: 5,
   },
 });

@@ -6,7 +6,8 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest",
     "flow": "node_modules/.bin/flow",
-    "flow-stop": "node_modules/.bin/flow stop"
+    "flow-stop": "node_modules/.bin/flow stop",
+    "lint": "eslint js --ext .js,.jsx"
   },
   "dependencies": {
     "react": "15.4.2",
@@ -17,6 +18,8 @@
   "devDependencies": {
     "babel-jest": "18.0.0",
     "babel-preset-react-native": "1.9.1",
+    "eslint": "^3.14.1",
+    "eslint-plugin-react-native": "^2.2.1",
     "flow-bin": "^0.36.0",
     "jest": "18.1.0",
     "react-test-renderer": "15.4.2"
