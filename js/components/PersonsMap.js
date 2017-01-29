@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,12 +9,6 @@ import {
 
 
 export default class PersonsMap extends Component {
-  constructor(props){
-    super()
-    console.log("moi")
-    console.log(props)
-    this.props = props;
-  }
 
   render() {
     return (
@@ -35,17 +29,22 @@ export default class PersonsMap extends Component {
 
         <Button
           onPress={this.props.onButtonClick}
-          title="Learn More"
+          title="Add Person"
           color="#841584"
-          accessibilityLabel="Learn more about this purple button"
+          accessibilityLabel="Add Person"
         />
-
-
-
       </View>
     );
   }
 }
+
+PersonsMap.propTypes = {
+  persons: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  })),
+  onButtonClick: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {
