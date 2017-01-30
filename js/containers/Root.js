@@ -2,11 +2,10 @@
 
 import React from "react";
 import { Provider } from "react-redux";
-import rootReducer from '../reducers'
-import { createStore } from 'redux'
 import App from "../containers/App";
+import configureStore from "../store/configureStore"
 
-let store = createStore(rootReducer)
+const store = configureStore()
 
 class Root extends React.Component {
   render() {

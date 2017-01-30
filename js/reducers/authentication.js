@@ -7,7 +7,11 @@ type Action = {
   type: string
 }
 
-import { LOGIN } from '../actions'
+import {
+  ATTEMPT_LOGIN,
+  LOGIN_SUCCESSFUL,
+  LOGIN_FAILED
+} from '../actions'
 
 
 const initialState = {
@@ -17,9 +21,18 @@ const initialState = {
 
 const authentication = (state: State = initialState, action: Action) => {
   switch (action.type) {
-    case LOGIN:
+    case ATTEMPT_LOGIN:
+      console.log("ATTEMPT_LOGIN")
+      return state
+    case LOGIN_SUCCESSFUL:
+      console.log("LOGIN_SUCCESSFUL")
       return {
         loggedIn: true
+      }
+    case LOGIN_FAILED:
+      console.log("LOGIN_FAILED")
+      return {
+        loggedIn: false
       }
     default:
       return state
