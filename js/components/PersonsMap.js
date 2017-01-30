@@ -18,11 +18,12 @@ export default class PersonsMap extends Component {
   componentDidMount() {
     this.watchID = navigator.geolocation.watchPosition(
       (position: Object) => {
-        console.log("HELLOOO location updated")
         this.props.onLocationUpdated(position)
-      }),
-      (error) => alert(JSON.stringify(error)),
-      {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000};
+      },
+      (error: Object) => {
+        console.log(error)
+      },
+      {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1});
 
   }
 
