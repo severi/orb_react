@@ -1,6 +1,8 @@
 /* @flow */
 
 import React, { Component, PropTypes } from 'react';
+import { DeviceEventEmitter } from 'react-native';
+
 import {
   StyleSheet,
   Text,
@@ -10,6 +12,21 @@ import {
 } from 'react-native';
 
 export default class PersonsMap extends Component {
+
+  watchID: ?number = null;
+
+  componentDidMount() {
+    this.watchID = navigator.geolocation.watchPosition(
+      (position: Object) => {
+        console.log("HELLOOO location updated")
+        this.props.onLocationUpdated(position)
+      }),
+      (error) => alert(JSON.stringify(error)),
+      {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000};
+
+  }
+
+
   render() {
     return (
       <View style={styles.container}>
@@ -18,13 +35,14 @@ export default class PersonsMap extends Component {
             person.name
           )}
         </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
+        <Text style={styles.userInfo}>
+          Lon: {this.props.user.location.longitude}
         </Text>
-        <Text style={styles.instructions}>
-          Double tap R son your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-
+        <Text style={styles.userInfo}>
+          Lat: {this.props.user.location.latitude}
+        </Text>
+        <Text style={styles.userInfo}>
+          Heading: {this.props.user.location.heading}
         </Text>
 
         <Button
@@ -44,6 +62,7 @@ PersonsMap.propTypes = {
     name: PropTypes.string.isRequired,
   })),
   onButtonClick: PropTypes.func.isRequired,
+  onLocationUpdated: PropTypes.func.isRequired,
 };
 
 
@@ -66,5 +85,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: instructionsColor,
     marginBottom: 5,
+  },
+  userInfo: {
+    textAlign: 'center',
+    textAlignVertical: 'bottom',
+    color: instructionsColor,
+    marginTop: 20,
   },
 });

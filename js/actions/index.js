@@ -31,3 +31,15 @@ export const login = (username: string, password: string) => {
 
   }
 }
+
+
+export const LOCATION_UPDATED = "LOCATION_UPDATED"
+export const updateLocation = (longitude: number, latitude : number, heading: number) => {
+  return {
+    type: LOCATION_UPDATED,
+    longitude,
+    latitude,
+    heading,
+  }
+}
+
