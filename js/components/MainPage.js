@@ -8,7 +8,7 @@ import {
 import VisiblePersonsMap from '../containers/VisiblePersonsMap'
 import UnauthenticatedPage from '../containers/UnauthenticatedPage'
 
-export default class Orb extends Component {
+export default class MainPage extends Component {
   render() {
     if (this.props.authentication.loggedIn == false) {
       return (

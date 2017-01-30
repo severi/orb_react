@@ -1,7 +1,7 @@
 /* @flow */
 
 import { connect } from 'react-redux'
-import Orb from '../components/Orb'
+import MainPage from '../components/MainPage'
 
 const mapStateToProps = (state) => {
   return {
@@ -18,6 +18,6 @@ const mapDispatchToProps = (dispatch) => {
 const App = connect(
   mapStateToProps,
   mapDispatchToProps
-)(Orb)
+)(MainPage)
 
 export default App
