@@ -5,9 +5,7 @@ import AuthenticationView from '../components/AuthenticationView'
 import { login } from '../actions'
 
 const mapStateToProps = (state) => {
-  return {
-    loggedIn: state.loggedIn
-  }
+  return {}
 }
 
 const mapDispatchToProps = (dispatch) => {
