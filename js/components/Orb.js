@@ -6,10 +6,18 @@ import {
 } from 'react-native';
 
 import VisiblePersonsMap from '../containers/VisiblePersonsMap'
+import UnauthenticatedPage from '../containers/UnauthenticatedPage'
 
-
-const Orb = () => (
-  <VisiblePersonsMap />
-)
-export default Orb
-
+export default class Orb extends Component {
+  render() {
+    if (this.props.authentication.loggedIn == false) {
+      return (
+        < UnauthenticatedPage / >
+      );
+    } else {
+      return (
+        < VisiblePersonsMap / >
+      );
+    }
+  }
+}

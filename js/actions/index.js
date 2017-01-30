@@ -4,7 +4,8 @@
  * action types
  */
 
-export const ADD_PERSON = 'ADD_PERSON'
+export const ADD_PERSON = "ADD_PERSON"
+export const LOGIN = "LOGIN"
 
 
 /*
@@ -17,5 +18,11 @@ export const addPerson = (name : string) => {
     type: ADD_PERSON,
     id: nextPersonId++,
     name
+  }
+}
+
+export const login = () => {
+  return {
+    type: LOGIN
   }
 }

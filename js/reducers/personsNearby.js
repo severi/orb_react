@@ -1,8 +1,14 @@
 /* @flow */
 type State = [{
   id: number,
-  name: string
+  name: string,
 }]
+
+type Action = {
+  type: string,
+  id: number,
+  name: string,
+}
 
 
 import { ADD_PERSON } from '../actions'
@@ -21,7 +27,7 @@ const initialState = [
   ]
 
 
-const personsNearby = (state: State = initialState, action: Object) => {
+const personsNearby = (state: State = initialState, action: Action) => {
   switch (action.type) {
     case ADD_PERSON:
       return [
