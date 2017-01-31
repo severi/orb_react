@@ -1,42 +1,31 @@
 /* @flow */
-type State = [{
-  id: number,
-  name: string,
-}]
 
-type Action = {
-  type: string,
-  id: number,
+type Person =
+{
+  lastupdate: string,
+  gender: string,
+  age: number,
   name: string,
+  _id: string
 }
+type State = Array<Person>
+
+import {
+  ATTEMPT_REFRESH_NEARBY_PERSONS,
+  REFRESH_NEARBY_PERSONS_SUCCESSFUL,
+  REFRESH_NEARBY_PERSONS_FAILED
+} from '../actions'
 
 
-import { ADD_PERSON } from '../actions'
-
-
-
-const initialState = [
-    {
-      id: -1,
-      name: "Petri"
-    },
-    {
-      id: -2,
-      name: "Taija"
-    }
-  ]
-
-
-const personsNearby = (state: State = initialState, action: Action) => {
+const personsNearby = (state: State = [], action: Object) => {
   switch (action.type) {
-    case ADD_PERSON:
-      return [
-        ...state,
-        {
-          id: action.id,
-          name: action.name
-        }
-      ]
+    case ATTEMPT_REFRESH_NEARBY_PERSONS:
+      return state
+    case REFRESH_NEARBY_PERSONS_SUCCESSFUL:
+      console.log(action.payload)
+      return action.payload
+    case REFRESH_NEARBY_PERSONS_FAILED:
+      return action.state
     default:
       return state
   }

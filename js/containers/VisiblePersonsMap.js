@@ -9,20 +9,20 @@ type PositionObject = {
 
 import { connect } from 'react-redux'
 import PersonsMap from '../components/PersonsMap'
-import { addPerson, updateLocation } from '../actions'
+import { refreshNearbyPersons, updateLocation } from '../actions'
 
 const mapStateToProps = (state) => {
   return {
     persons: state.personsNearby,
     user: state.user,
+    authentication: state.authentication
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onButtonClick: () => {
-      let name = "Sakke"
-      dispatch(addPerson(name))
+    onViewRefresh: (token: string) => {
+      dispatch(refreshNearbyPersons(token))
     },
     onLocationUpdated: (position: PositionObject) => {
       let longitude= position.coords.longitude

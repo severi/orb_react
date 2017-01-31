@@ -1,10 +1,7 @@
 /* @flow */
 type State = {
-  loggedIn: boolean
-}
-
-type Action = {
-  type: string
+  loggedIn: boolean,
+  token: ?string
 }
 
 import {
@@ -15,24 +12,24 @@ import {
 
 
 const initialState = {
-  loggedIn: false
+  loggedIn: false,
+  token: undefined,
 }
 
 
-const authentication = (state: State = initialState, action: Action) => {
+const authentication = (state: State = initialState, action: Object) => {
   switch (action.type) {
     case ATTEMPT_LOGIN:
-      console.log("ATTEMPT_LOGIN")
       return state
     case LOGIN_SUCCESSFUL:
-      console.log("LOGIN_SUCCESSFUL")
       return {
-        loggedIn: true
+        loggedIn: true,
+        token: action.payload.token
       }
     case LOGIN_FAILED:
-      console.log("LOGIN_FAILED")
       return {
-        loggedIn: false
+        loggedIn: false,
+        token: undefined
       }
     default:
       return state

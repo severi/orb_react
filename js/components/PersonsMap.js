@@ -16,6 +16,7 @@ export default class PersonsMap extends Component {
   watchID: ?number = null;
 
   componentDidMount() {
+    console.log(this)
     this.watchID = navigator.geolocation.watchPosition(
       (position: Object) => {
         this.props.onLocationUpdated(position)
@@ -25,6 +26,12 @@ export default class PersonsMap extends Component {
       },
       {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1});
 
+  }
+
+  refreshView() {
+    console.log(this)
+    let token = this.props.authentication.token
+    this.props.onViewRefresh(token)
   }
 
 
@@ -47,10 +54,10 @@ export default class PersonsMap extends Component {
         </Text>
 
         <Button
-          onPress={this.props.onButtonClick}
-          title="Add Person"
+          onPress={this.refreshView.bind(this)}
+          title="Refresh View"
           color="#841584"
-          accessibilityLabel="Add Person"
+          accessibilityLabel="Refresh View"
         />
       </View>
     );
@@ -59,10 +66,13 @@ export default class PersonsMap extends Component {
 
 PersonsMap.propTypes = {
   persons: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    lastupdate: PropTypes.string.isRequired,
+    gender: PropTypes.string.isRequired,
+    age: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
   })),
-  onButtonClick: PropTypes.func.isRequired,
+  onViewRefresh: PropTypes.func.isRequired,
   onLocationUpdated: PropTypes.func.isRequired,
 };
 
