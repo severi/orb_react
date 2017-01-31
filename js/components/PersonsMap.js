@@ -8,14 +8,27 @@ import {
   Text,
   View,
   ListView,
-  Button
+  Button,
+  NativeModules
 } from 'react-native';
+
+type AzimuthEvent = {
+  newAzimuth: Number
+};
 
 export default class PersonsMap extends Component {
 
   watchID: ?number = null;
+  watchAzimuth: ?number = null;
+  currentAzimuth = 0;
+  azi = 0;
 
   componentDidMount() {
+    NativeModules.CompassAndroid.startTracking();
+
+    DeviceEventEmitter.addListener('azimuthChanged', this.azimuthChanged.bind(this));
+
+
     this.watchID = navigator.geolocation.watchPosition(
       (position: Object) => {
         console.log("HELLOOO location updated")
@@ -24,6 +37,17 @@ export default class PersonsMap extends Component {
       (error) => alert(JSON.stringify(error)),
       {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000};
 
+    // this.watchAzimuth = NativeModules.CompassAndroid.startTracking();
+    //   (azimuth: Object) => {
+    //     console.log("AZIMUUUUUTH updated")
+    //     this.props.onAzimuthUpdated(azimuth)
+    //   }
+
+  }
+
+  azimuthChanged(e: AzimuthEvent) {
+    console.log("AZIMUUUUUTH updated")
+    this.currentAzimuth = e.newAzimuth;
   }
 
 
@@ -44,6 +68,12 @@ export default class PersonsMap extends Component {
         <Text style={styles.userInfo}>
           Heading: {this.props.user.location.heading}
         </Text>
+        <Text style={styles.userInfo}>
+          Azimuth: {Math.round(this.props.azimuth)} ˚ SE
+        </Text>
+        <Text style={styles.userInfo}>
+          Azimuth2: {this.currentAzimuth}
+        </Text>
 
         <Button
           onPress={this.props.onButtonClick}
@@ -63,6 +93,7 @@ PersonsMap.propTypes = {
   })),
   onButtonClick: PropTypes.func.isRequired,
   onLocationUpdated: PropTypes.func.isRequired,
+  onAzimuthUpdated: PropTypes.func.isRequired,
 };
 
 

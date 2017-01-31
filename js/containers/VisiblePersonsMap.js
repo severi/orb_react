@@ -5,16 +5,22 @@ type PositionObject = {
     latitude: number,
     heading: number,
   }
-}
+};
+
+type AzimuthObject = {
+  newAzimuth: number
+};
 
 import { connect } from 'react-redux'
 import PersonsMap from '../components/PersonsMap'
-import { addPerson, updateLocation } from '../actions'
+import { addPerson, updateLocation, updateAzimuth } from '../actions'
+
 
 const mapStateToProps = (state) => {
   return {
     persons: state.personsNearby,
     user: state.user,
+    azimuth: state.azimuth,
   }
 }
 
@@ -29,6 +35,10 @@ const mapDispatchToProps = (dispatch) => {
       let latitude= position.coords.latitude
       let heading= position.coords.heading
       dispatch(updateLocation(longitude, latitude, heading))
+    },
+    onAzimuthUpdated: (azimuth: AzimuthObject) => {
+      let a= azimuth.newAzimuth
+      dispatch(updateAzimuth(a))
     },
   }
 }
