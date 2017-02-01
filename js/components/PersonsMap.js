@@ -18,38 +18,39 @@ type AzimuthEvent = {
 
 export default class PersonsMap extends Component {
 
-  watchID: ?number = null;
-  watchAzimuth: ?number = null;
-  currentAzimuth = 0;
-  azi = 0;
+  watchID: ?number = null
+  watchAzimuth: ?number = null
+  currentAzimuth: number = 0
+  lastDispatchedAzimuth: ?number = undefined
+  interval: ?number = undefined
 
   componentDidMount() {
     NativeModules.CompassAndroid.startTracking();
-
-    DeviceEventEmitter.addListener('azimuthChanged', this.azimuthChanged.bind(this));
+    DeviceEventEmitter.addListener('azimuthChanged', e => {
+      this.currentAzimuth = e.newAzimuth
+    });
 
 
     this.watchID = navigator.geolocation.watchPosition(
       (position: Object) => {
-        console.log("HELLOOO location updated")
         this.props.onLocationUpdated(position)
       }),
       (error) => alert(JSON.stringify(error)),
-      {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000};
+      {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000}
 
-    // this.watchAzimuth = NativeModules.CompassAndroid.startTracking();
-    //   (azimuth: Object) => {
-    //     console.log("AZIMUUUUUTH updated")
-    //     this.props.onAzimuthUpdated(azimuth)
-    //   }
+    this.interval = setInterval(() => {
+      let current = Math.round(this.currentAzimuth)
+
+      if (this.lastDispatchedAzimuth == undefined ||
+          this.lastDispatchedAzimuth != current)
+      {
+        this.props.onAzimuthUpdated(current)
+        this.lastDispatchedAzimuth = current
+
+      }
+    }, 100)
 
   }
-
-  azimuthChanged(e: AzimuthEvent) {
-    console.log("AZIMUUUUUTH updated")
-    this.currentAzimuth = e.newAzimuth;
-  }
-
 
   render() {
     return (
@@ -60,19 +61,13 @@ export default class PersonsMap extends Component {
           )}
         </Text>
         <Text style={styles.userInfo}>
-          Lon: {this.props.user.location.longitude}
+          Lon: {this.props.location.longitude}
         </Text>
         <Text style={styles.userInfo}>
-          Lat: {this.props.user.location.latitude}
+          Lat: {this.props.location.latitude}
         </Text>
         <Text style={styles.userInfo}>
-          Heading: {this.props.user.location.heading}
-        </Text>
-        <Text style={styles.userInfo}>
-          Azimuth: {Math.round(this.props.azimuth)} ˚ SE
-        </Text>
-        <Text style={styles.userInfo}>
-          Azimuth2: {this.currentAzimuth}
+          Azimuth2: {this.props.location.azimuth}
         </Text>
 
         <Button

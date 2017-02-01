@@ -3,12 +3,12 @@
 import { combineReducers } from 'redux'
 import personsNearby from './personsNearby'
 import authentication from './authentication'
-import user from './user'
+import location from './location'
 
 const rootReducer = combineReducers({
   personsNearby,
   authentication,
-  user
+  location
 })
 
 export default rootReducer
