@@ -8,32 +8,52 @@ import {
   Text,
   View,
   ListView,
-  Button
+  Button,
+  NativeModules
 } from 'react-native';
+
+type AzimuthEvent = {
+  newAzimuth: Number
+};
 
 export default class PersonsMap extends Component {
 
-  watchID: ?number = null;
+  watchID: ?number = null
+  watchAzimuth: ?number = null
+  currentAzimuth: number = 0
+  lastDispatchedAzimuth: ?number = undefined
+  interval: ?number = undefined
 
   componentDidMount() {
-    console.log(this)
+    NativeModules.CompassAndroid.startTracking();
+    DeviceEventEmitter.addListener('azimuthChanged', e => {
+      this.currentAzimuth = e.newAzimuth
+    });
+
+    this.interval = setInterval(() => {
+      let current = Math.round(this.currentAzimuth)
+      if (this.lastDispatchedAzimuth == undefined ||
+          this.lastDispatchedAzimuth != current)
+      {
+        this.props.onAzimuthUpdated(current)
+        this.lastDispatchedAzimuth = current
+      }
+    }, 100)
+
+    let geolocationSettings = {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1}
     this.watchID = navigator.geolocation.watchPosition(
       (position: Object) => {
         this.props.onLocationUpdated(position)
       },
       (error: Object) => {
         console.log(error)
-      },
-      {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1});
-
+      }, geolocationSettings)
   }
 
   refreshView() {
-    console.log(this)
     let token = this.props.authentication.token
     this.props.onViewRefresh(token)
   }
-
 
   render() {
     return (
@@ -44,13 +64,13 @@ export default class PersonsMap extends Component {
           )}
         </Text>
         <Text style={styles.userInfo}>
-          Lon: {this.props.user.location.longitude}
+          Lon: {this.props.location.longitude}
         </Text>
         <Text style={styles.userInfo}>
-          Lat: {this.props.user.location.latitude}
+          Lat: {this.props.location.latitude}
         </Text>
         <Text style={styles.userInfo}>
-          Heading: {this.props.user.location.heading}
+          Azimuth2: {this.props.location.azimuth}
         </Text>
 
         <Button
@@ -74,6 +94,7 @@ PersonsMap.propTypes = {
   })),
   onViewRefresh: PropTypes.func.isRequired,
   onLocationUpdated: PropTypes.func.isRequired,
+  onAzimuthUpdated: PropTypes.func.isRequired,
 };
 
 
