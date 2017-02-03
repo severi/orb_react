@@ -19,12 +19,38 @@ type AzimuthEvent = {
 export default class PersonsMap extends Component {
 
   watchID: ?number = null
-  watchAzimuth: ?number = null
   currentAzimuth: number = 0
   lastDispatchedAzimuth: ?number = undefined
   interval: ?number = undefined
 
   componentDidMount() {
+    this.watchAzimuth()
+    this.watchCoordinates()
+  }
+
+  componentWillUnmount() {
+    this.unwatchCoordinates()
+    this.unwatchAzimuth()
+  }
+
+  watchCoordinates(){
+    let geolocationSettings = {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1}
+    this.watchID = navigator.geolocation.watchPosition(
+      (position: Object) => {
+        this.props.onLocationUpdated(position)
+      },
+      (error: Object) => {
+        console.log(error)
+      }, geolocationSettings)
+  }
+  unwatchCoordinates(){
+    NativeModules.CompassAndroid.stopTracking()
+    if (this.interval){
+      clearInterval(this.interval)
+    }
+  }
+
+  watchAzimuth(){
     NativeModules.CompassAndroid.startTracking();
     DeviceEventEmitter.addListener('azimuthChanged', e => {
       this.currentAzimuth = e.newAzimuth
@@ -39,16 +65,11 @@ export default class PersonsMap extends Component {
         this.lastDispatchedAzimuth = current
       }
     }, 100)
-
-    let geolocationSettings = {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1}
-    this.watchID = navigator.geolocation.watchPosition(
-      (position: Object) => {
-        this.props.onLocationUpdated(position)
-      },
-      (error: Object) => {
-        console.log(error)
-      }, geolocationSettings)
   }
+  unwatchAzimuth(){
+    navigator.geolocation.clearWatch(this.watchID)
+  }
+
 
   refreshView() {
     let token = this.props.authentication.token
