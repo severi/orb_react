@@ -27,10 +27,15 @@ export default class PersonsMap extends Component {
 
   persons = [
     {distance: 100, angle:10,},
-    // {distance: 2, angle:20,},
-    // {distance: 30, angle:190,},
-    // {distance: 4, angle:350,},
+    {distance: 15, angle:20,},
+    {distance: 30, angle:190,},
+    {distance: 80, angle:350,},
+    //{distance: 0, angle:0,},
   ]
+
+  radians(degrees:number) {
+    return degrees * Math.PI / 180
+  };
 
   componentDidMount() {
     this.watchAzimuth()
@@ -73,7 +78,7 @@ export default class PersonsMap extends Component {
         this.props.onAzimuthUpdated(current)
         this.lastDispatchedAzimuth = current
       }
-    }, 100)
+    }, 10)
   }
   unwatchAzimuth(){
     navigator.geolocation.clearWatch(this.watchID)
@@ -87,23 +92,19 @@ export default class PersonsMap extends Component {
 
   render() {
 
-// orbi.view.setTranslationX(leveys + (leveys * (float) Math.sin(Math.toRadians(orbi.getBearing() - currentDegree))) * (orbDistance / 150));
-// orbi.view.setTranslationY(korkeus - (korkeus * (float) Math.cos(Math.toRadians(orbi.getBearing() - currentDegree))) * (orbDistance / 150));
-
-    let {height, width} = Dimensions.get('window');
+    let orbSizeDividedByTwo = 25
+    let {height, width} = Dimensions.get('window')
     let origin = {
-      x: width/2,
-      y: height/2,
+      x: width/2 - orbSizeDividedByTwo,
+      y: height/2 - orbSizeDividedByTwo,
     }
 
     var azimuth = this.props.location.azimuth
-    if (azimuth == undefined)
-      azimuth = 0
 
     let persons = this.persons.map(person =>
     {
-      let x = origin.x + origin.x * Math.cos(person.angle-azimuth)*person.distance/150
-      let y = origin.y - origin.y * Math.sin(person.angle-azimuth)*person.distance/150
+      let x = origin.x + (origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
+      let y = origin.y - (origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
       return (
         <Image
           source={require('./img/orb.png')}
@@ -115,6 +116,12 @@ export default class PersonsMap extends Component {
     return (
       <View style={styles.container}>
         {persons}
+        <Image
+          source={require('./img/orb2.png')}
+        />
+        <Text style={styles.userIitial}>
+          S
+        </Text>
       </View>
     );
   }
@@ -134,14 +141,15 @@ PersonsMap.propTypes = {
 };
 
 
-let containerBackground = "#F5FCFF";
+let containerBackground = "#000000";
 let instructionsColor = "#333333";
+let userColor = "#00FFFF";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    //justifyContent: 'center',
+    //alignItems: 'center',
     backgroundColor: containerBackground,
   },
   welcome: {
@@ -161,5 +169,12 @@ const styles = StyleSheet.create({
     textAlignVertical: 'bottom',
     color: instructionsColor,
     marginTop: 20,
+  },
+  userIitial: {
+    flex: 1,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    color: userColor,
+    fontSize: 50,
   },
 });
