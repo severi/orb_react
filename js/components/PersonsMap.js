@@ -1,5 +1,10 @@
 /* @flow */
 
+type Person = {
+  distance: number,
+  angle: number,
+}
+
 import React, { Component, PropTypes } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 
@@ -25,13 +30,29 @@ export default class PersonsMap extends Component {
   lastDispatchedAzimuth: ?number = undefined
   interval: ?number = undefined
 
+  origin: Object = {
+      x: undefined,
+      y: undefined,
+  }
+
+
+
   persons = [
     {distance: 100, angle:10,},
     {distance: 15, angle:20,},
     {distance: 30, angle:190,},
     {distance: 80, angle:350,},
-    //{distance: 0, angle:0,},
   ]
+
+  constructor() {
+    super()
+    const orbSizeDividedByTwo = 25
+    const {height, width} = Dimensions.get('window')
+    this.origin = {
+      x: width/2 - orbSizeDividedByTwo,
+      y: height/2 - orbSizeDividedByTwo,
+    }
+  }
 
   radians(degrees:number) {
     return degrees * Math.PI / 180
@@ -90,32 +111,29 @@ export default class PersonsMap extends Component {
     this.props.onViewRefresh(token)
   }
 
+  tranformToCoordinates(person: Person) {
+    const azimuth = this.props.location.azimuth
+    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
+    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
+    return {x,y}
+  }
+
+
   render() {
-
-    let orbSizeDividedByTwo = 25
-    let {height, width} = Dimensions.get('window')
-    let origin = {
-      x: width/2 - orbSizeDividedByTwo,
-      y: height/2 - orbSizeDividedByTwo,
-    }
-
-    var azimuth = this.props.location.azimuth
-
-    let persons = this.persons.map(person =>
+    const visualizeNearbyOrbs = this.persons.map((person, i) =>
     {
-      let x = origin.x + (origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
-      let y = origin.y - (origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
+      const {x, y} = this.tranformToCoordinates(person)
       return (
-        <Image
+        <Image key={i}
           source={require('./img/orb.png')}
           style={[styles.pointer, {'position':'absolute', transform: [{ translate: [x,y]}]}]}
         />
-        )
+      )
     })
 
     return (
       <View style={styles.container}>
-        {persons}
+        {visualizeNearbyOrbs}
         <Image
           source={require('./img/orb2.png')}
         />
