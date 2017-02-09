@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
   ListView,
   Button,
   NativeModules
@@ -77,6 +78,10 @@ export default class PersonsMap extends Component {
   }
 
   render() {
+    var trans = this.props.location.azimuth
+    if (trans == undefined)
+      trans = 0
+    var xy = [trans, trans]
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
@@ -93,6 +98,11 @@ export default class PersonsMap extends Component {
         <Text style={styles.userInfo}>
           Azimuth2: {this.props.location.azimuth}
         </Text>
+
+        <Image
+          source={require('./img/orb.png')}
+          style={[styles.pointer, {transform: [{ translate: xy}]}]}
+        />
 
         <Button
           onPress={this.refreshView.bind(this)}
@@ -133,6 +143,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     margin: 10,
+  },
+  pointer: {
   },
   instructions: {
     textAlign: 'center',
