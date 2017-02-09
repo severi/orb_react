@@ -10,7 +10,8 @@ import {
   Image,
   ListView,
   Button,
-  NativeModules
+  NativeModules,
+  Dimensions,
 } from 'react-native';
 
 type AzimuthEvent = {
@@ -23,6 +24,13 @@ export default class PersonsMap extends Component {
   currentAzimuth: number = 0
   lastDispatchedAzimuth: ?number = undefined
   interval: ?number = undefined
+
+  persons = [
+    {distance: 100, angle:10,},
+    // {distance: 2, angle:20,},
+    // {distance: 30, angle:190,},
+    // {distance: 4, angle:350,},
+  ]
 
   componentDidMount() {
     this.watchAzimuth()
@@ -78,38 +86,35 @@ export default class PersonsMap extends Component {
   }
 
   render() {
-    var trans = this.props.location.azimuth
-    if (trans == undefined)
-      trans = 0
-    var xy = [trans, trans]
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          {this.props.persons.map(person =>
-            person.name
-          )}
-        </Text>
-        <Text style={styles.userInfo}>
-          Lon: {this.props.location.longitude}
-        </Text>
-        <Text style={styles.userInfo}>
-          Lat: {this.props.location.latitude}
-        </Text>
-        <Text style={styles.userInfo}>
-          Azimuth2: {this.props.location.azimuth}
-        </Text>
 
+// orbi.view.setTranslationX(leveys + (leveys * (float) Math.sin(Math.toRadians(orbi.getBearing() - currentDegree))) * (orbDistance / 150));
+// orbi.view.setTranslationY(korkeus - (korkeus * (float) Math.cos(Math.toRadians(orbi.getBearing() - currentDegree))) * (orbDistance / 150));
+
+    let {height, width} = Dimensions.get('window');
+    let origin = {
+      x: width/2,
+      y: height/2,
+    }
+
+    var azimuth = this.props.location.azimuth
+    if (azimuth == undefined)
+      azimuth = 0
+
+    let persons = this.persons.map(person =>
+    {
+      let x = origin.x + origin.x * Math.cos(person.angle-azimuth)*person.distance/150
+      let y = origin.y - origin.y * Math.sin(person.angle-azimuth)*person.distance/150
+      return (
         <Image
           source={require('./img/orb.png')}
-          style={[styles.pointer, {transform: [{ translate: xy}]}]}
+          style={[styles.pointer, {'position':'absolute', transform: [{ translate: [x,y]}]}]}
         />
+        )
+    })
 
-        <Button
-          onPress={this.refreshView.bind(this)}
-          title="Refresh View"
-          color="#841584"
-          accessibilityLabel="Refresh View"
-        />
+    return (
+      <View style={styles.container}>
+        {persons}
       </View>
     );
   }
