@@ -1,5 +1,10 @@
 /* @flow */
 
+type Person = {
+  distance: number,
+  angle: number,
+}
+
 import React, { Component, PropTypes } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 
@@ -28,13 +33,27 @@ export default class PersonsMap extends Component {
   lastDispatchedAzimuth: ?number = undefined
   interval: ?number = undefined
 
+  origin: Object = {
+      x: undefined,
+      y: undefined,
+  }
+
   persons = [
     {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male'},
     {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female'},
     {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female'},
     {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male'},
-    //{distance: 0, angle:0,},
   ]
+
+  constructor() {
+    super()
+    const orbSizeDividedByTwo = 25
+    const {height, width} = Dimensions.get('window')
+    this.origin = {
+      x: width/2 - orbSizeDividedByTwo,
+      y: height/2 - orbSizeDividedByTwo,
+    }
+  }
 
   radians(degrees:number) {
     return degrees * Math.PI / 180
@@ -81,7 +100,7 @@ export default class PersonsMap extends Component {
         this.props.onAzimuthUpdated(current)
         this.lastDispatchedAzimuth = current
       }
-    }, 10)
+    }, 50)
   }
   unwatchAzimuth(){
     navigator.geolocation.clearWatch(this.watchID)
@@ -109,21 +128,17 @@ export default class PersonsMap extends Component {
     console.log("You tapped the LOGO!");
   }
 
+  tranformToCoordinates(person: Person) {
+    const azimuth = this.props.location.azimuth
+    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
+    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
+    return {x,y}
+  }
+
   render() {
-
-    let orbSizeDividedByTwo = 25
-    let {height, width} = Dimensions.get('window')
-    let origin = {
-      x: width/2 - orbSizeDividedByTwo,
-      y: height/2 - orbSizeDividedByTwo,
-    }
-
-    var azimuth = this.props.location.azimuth
-
-    let persons = this.persons.map((person, i) =>
+    const visualizeNearbyOrbs = this.persons.map((person, i) =>
     {
-      let x = origin.x + (origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
-      let y = origin.y - (origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
+      const {x, y} = this.tranformToCoordinates(person)
       return (
         <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute', zIndex:1, transform: [{ translate: [x,y]}]}}>
           <Image
@@ -135,7 +150,7 @@ export default class PersonsMap extends Component {
 
     return (
       <View style={styles.container}>
-        {persons}
+        {visualizeNearbyOrbs}
         <TouchableOpacity onPress={this._onPressLogo} style={{position: 'absolute', zIndex:1}}>
           <Image
             source={require('./img/orb2.png')}
