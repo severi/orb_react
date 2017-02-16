@@ -12,6 +12,9 @@ import {
   Button,
   NativeModules,
   Dimensions,
+  TouchableHighlight,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 type AzimuthEvent = {
@@ -26,10 +29,10 @@ export default class PersonsMap extends Component {
   interval: ?number = undefined
 
   persons = [
-    {distance: 100, angle:10,},
-    {distance: 15, angle:20,},
-    {distance: 30, angle:190,},
-    {distance: 80, angle:350,},
+    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male'},
+    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female'},
+    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female'},
+    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male'},
     //{distance: 0, angle:0,},
   ]
 
@@ -90,6 +93,22 @@ export default class PersonsMap extends Component {
     this.props.onViewRefresh(token)
   }
 
+  _onPressButton(i) {
+    console.log("You tapped orb " + i + ', message: ' + this.persons[i].message)
+    Alert.alert(
+       'Orb ' + i + ' pressed',
+       this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
+       [
+          {text: 'Block'},
+          {text: 'Friend'},
+       ]
+    )
+  }
+
+  _onPressLogo() {
+    console.log("You tapped the LOGO!");
+  }
+
   render() {
 
     let orbSizeDividedByTwo = 25
@@ -101,24 +120,27 @@ export default class PersonsMap extends Component {
 
     var azimuth = this.props.location.azimuth
 
-    let persons = this.persons.map(person =>
+    let persons = this.persons.map((person, i) =>
     {
       let x = origin.x + (origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
       let y = origin.y - (origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
       return (
-        <Image
-          source={require('./img/orb.png')}
-          style={[styles.pointer, {'position':'absolute', transform: [{ translate: [x,y]}]}]}
-        />
+        <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute', zIndex:1, transform: [{ translate: [x,y]}]}}>
+          <Image
+            source={require('./img/orb.png')}
+          />
+        </TouchableHighlight>
         )
     })
 
     return (
       <View style={styles.container}>
         {persons}
-        <Image
-          source={require('./img/orb2.png')}
-        />
+        <TouchableOpacity onPress={this._onPressLogo} style={{position: 'absolute', zIndex:1}}>
+          <Image
+            source={require('./img/orb2.png')}
+          />
+        </TouchableOpacity>
         <Text style={styles.userIitial}>
           S
         </Text>
@@ -156,8 +178,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     margin: 10,
-  },
-  pointer: {
   },
   instructions: {
     textAlign: 'center',
