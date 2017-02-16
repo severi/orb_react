@@ -11,7 +11,7 @@ import {LOCATION_UPDATED, AZIMUTH_UPDATED} from '../actions'
 const initialState = {
   longitude: undefined,
   latitude: undefined,
-  azimuth: undefined
+  azimuth: 0
 }
 
 

@@ -1,5 +1,10 @@
 /* @flow */
 
+type Person = {
+  distance: number,
+  angle: number,
+}
+
 import React, { Component, PropTypes } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 
@@ -7,9 +12,14 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
   ListView,
   Button,
-  NativeModules
+  NativeModules,
+  Dimensions,
+  TouchableHighlight,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 type AzimuthEvent = {
@@ -22,6 +32,32 @@ export default class PersonsMap extends Component {
   currentAzimuth: number = 0
   lastDispatchedAzimuth: ?number = undefined
   interval: ?number = undefined
+
+  origin: Object = {
+      x: undefined,
+      y: undefined,
+  }
+
+  persons = [
+    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male'},
+    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female'},
+    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female'},
+    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male'},
+  ]
+
+  constructor() {
+    super()
+    const orbSizeDividedByTwo = 25
+    const {height, width} = Dimensions.get('window')
+    this.origin = {
+      x: width/2 - orbSizeDividedByTwo,
+      y: height/2 - orbSizeDividedByTwo,
+    }
+  }
+
+  radians(degrees:number) {
+    return degrees * Math.PI / 180
+  };
 
   componentDidMount() {
     this.watchAzimuth()
@@ -64,7 +100,7 @@ export default class PersonsMap extends Component {
         this.props.onAzimuthUpdated(current)
         this.lastDispatchedAzimuth = current
       }
-    }, 100)
+    }, 50)
   }
   unwatchAzimuth(){
     navigator.geolocation.clearWatch(this.watchID)
@@ -76,30 +112,53 @@ export default class PersonsMap extends Component {
     this.props.onViewRefresh(token)
   }
 
+  _onPressButton(i) {
+    console.log("You tapped orb " + i + ', message: ' + this.persons[i].message)
+    Alert.alert(
+       'Orb ' + i + ' pressed',
+       this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
+       [
+          {text: 'Block'},
+          {text: 'Friend'},
+       ]
+    )
+  }
+
+  _onPressLogo() {
+    console.log("You tapped the LOGO!");
+  }
+
+  tranformToCoordinates(person: Person) {
+    const azimuth = this.props.location.azimuth
+    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
+    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
+    return {x,y}
+  }
+
   render() {
+    const visualizeNearbyOrbs = this.persons.map((person, i) =>
+    {
+      const {x, y} = this.tranformToCoordinates(person)
+      return (
+        <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute', zIndex:1, transform: [{ translate: [x,y]}]}}>
+          <Image
+            source={require('./img/orb.png')}
+          />
+        </TouchableHighlight>
+        )
+    })
+
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          {this.props.persons.map(person =>
-            person.name
-          )}
+        {visualizeNearbyOrbs}
+        <TouchableOpacity onPress={this._onPressLogo} style={{position: 'absolute', zIndex:1}}>
+          <Image
+            source={require('./img/orb2.png')}
+          />
+        </TouchableOpacity>
+        <Text style={styles.userIitial}>
+          S
         </Text>
-        <Text style={styles.userInfo}>
-          Lon: {this.props.location.longitude}
-        </Text>
-        <Text style={styles.userInfo}>
-          Lat: {this.props.location.latitude}
-        </Text>
-        <Text style={styles.userInfo}>
-          Azimuth2: {this.props.location.azimuth}
-        </Text>
-
-        <Button
-          onPress={this.refreshView.bind(this)}
-          title="Refresh View"
-          color="#841584"
-          accessibilityLabel="Refresh View"
-        />
       </View>
     );
   }
@@ -119,14 +178,15 @@ PersonsMap.propTypes = {
 };
 
 
-let containerBackground = "#F5FCFF";
+let containerBackground = "#000000";
 let instructionsColor = "#333333";
+let userColor = "#00FFFF";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    //justifyContent: 'center',
+    //alignItems: 'center',
     backgroundColor: containerBackground,
   },
   welcome: {
@@ -144,5 +204,12 @@ const styles = StyleSheet.create({
     textAlignVertical: 'bottom',
     color: instructionsColor,
     marginTop: 20,
+  },
+  userIitial: {
+    flex: 1,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    color: userColor,
+    fontSize: 50,
   },
 });
