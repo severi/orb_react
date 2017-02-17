@@ -39,10 +39,10 @@ export default class PersonsMap extends Component {
   }
 
   persons = [
-    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male'},
-    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female'},
-    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female'},
-    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male'},
+    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', plus: 1},
+    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', plus: 0},
+    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', plus: 0},
+    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', plus: 1},
   ]
 
   constructor() {
@@ -62,6 +62,7 @@ export default class PersonsMap extends Component {
   componentDidMount() {
     this.watchAzimuth()
     this.watchCoordinates()
+    this.updateOrbs()
   }
 
   componentWillUnmount() {
@@ -104,6 +105,32 @@ export default class PersonsMap extends Component {
   }
   unwatchAzimuth(){
     navigator.geolocation.clearWatch(this.watchID)
+  }
+
+  updateOrbs(){
+    this.interval = setInterval(() => {
+      this.persons.map((person, i) =>
+      {
+        if (person.distance > 120) {
+          person.plus = 0
+        }
+        else if (person.distance < 10) {
+          person.plus = 1
+        }
+
+        if (person.plus == 1) {
+          person.distance = person.distance + 0.1
+          person.angle = person.angle + 0.2
+        } 
+        else if (person.plus == 0) {
+          person.distance = person.distance - 0.1
+          person.angle = person.angle - 0.5
+        }
+        
+      })
+      this.forceUpdate()
+      console.log('rendered');
+    }, 100)
   }
 
 
