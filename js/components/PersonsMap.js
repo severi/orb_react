@@ -20,6 +20,8 @@ import {
   TouchableHighlight,
   TouchableOpacity,
   Alert,
+  Animated,
+  Easing,
 } from 'react-native';
 
 type AzimuthEvent = {
@@ -38,11 +40,16 @@ export default class PersonsMap extends Component {
       y: undefined,
   }
 
+  transferValueX: Animated.Value = null
+  transferValueY: Animated.Value = null
+
+  azimuthUpdateIntervall = 50
+
   persons = [
-    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male'},
-    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female'},
-    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female'},
-    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male'},
+    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', oldX: 0, oldY: 0},
+    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', oldX: 0, oldY: 0},
+    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', oldX: 0, oldY: 0},
+    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', oldX: 0, oldY: 0},
   ]
 
   constructor() {
@@ -53,6 +60,8 @@ export default class PersonsMap extends Component {
       x: width/2 - orbSizeDividedByTwo,
       y: height/2 - orbSizeDividedByTwo,
     }
+    this.transferValueX = new Animated.Value(0)
+    this.transferValueY = new Animated.Value(0)
   }
 
   radians(degrees:number) {
@@ -64,9 +73,38 @@ export default class PersonsMap extends Component {
     this.watchCoordinates()
   }
 
+  componentDidUpdate() {
+    this.transferX()
+    this.transferY()
+  }
+
   componentWillUnmount() {
     this.unwatchCoordinates()
     this.unwatchAzimuth()
+  }
+
+  transferX () {
+    this.transferValueX.setValue(0)
+    Animated.timing(
+      this.transferValueX,
+      {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.linear
+      }
+    ).start()
+  }
+
+  transferY () {
+    this.transferValueY.setValue(0)
+    Animated.timing(
+      this.transferValueY,
+      {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.linear
+      }
+    ).start()
   }
 
   watchCoordinates(){
@@ -100,7 +138,7 @@ export default class PersonsMap extends Component {
         this.props.onAzimuthUpdated(current)
         this.lastDispatchedAzimuth = current
       }
-    }, 50)
+    }, this.azimuthUpdateIntervall)
   }
   unwatchAzimuth(){
     navigator.geolocation.clearWatch(this.watchID)
@@ -139,13 +177,34 @@ export default class PersonsMap extends Component {
     const visualizeNearbyOrbs = this.persons.map((person, i) =>
     {
       const {x, y} = this.tranformToCoordinates(person)
+      const transformX = this.transferValueX.interpolate({
+        inputRange: [0, 1],
+        outputRange: [person.oldX, x]
+      })
+      const transformY = this.transferValueY.interpolate({
+        inputRange: [0, 1],
+        outputRange: [person.oldY, y]
+      })
+      person.oldX = x
+      person.oldY = y
       return (
-        <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute', zIndex:1, transform: [{ translate: [x,y]}]}}>
-          <Image
-            source={require('./img/orb.png')}
-          />
-        </TouchableHighlight>
+        <Animated.Image
+          style={{
+            transform: [{translateX: transformX}, {translateY: transformY}],
+            position:'absolute',
+            zIndex:1}}
+          key={i}
+          source={require('./img/orb.png')}
+          >
+          <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute', zIndex:1}}>
+            <Image
+              source={require('./img/orb.png')}
+            />
+          </TouchableHighlight>
+        </Animated.Image>
         )
+
+
     })
 
     return (
