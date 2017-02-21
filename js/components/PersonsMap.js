@@ -36,29 +36,29 @@ export default class PersonsMap extends Component {
   interval: ?number = undefined
 
   origin: Object = {
-      x: undefined,
-      y: undefined,
+    x: undefined,
+    y: undefined,
   }
 
   transferValueX: Animated.Value = null
   transferValueY: Animated.Value = null
 
-  azimuthUpdateIntervall = 50
+  azimuthUpdateIntervall = 100
+  orbSizeDividedByTwo = 25
 
   persons = [
-    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', oldX: 0, oldY: 0},
-    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', oldX: 0, oldY: 0},
-    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', oldX: 0, oldY: 0},
-    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', oldX: 0, oldY: 0},
+    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
+    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
+    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
+    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
   ]
 
   constructor() {
     super()
-    const orbSizeDividedByTwo = 25
     const {height, width} = Dimensions.get('window')
     this.origin = {
-      x: width/2 - orbSizeDividedByTwo,
-      y: height/2 - orbSizeDividedByTwo,
+      x: width/2 - this.orbSizeDividedByTwo,
+      y: height/2 - this.orbSizeDividedByTwo,
     }
     this.transferValueX = new Animated.Value(0)
     this.transferValueY = new Animated.Value(0)
@@ -89,7 +89,7 @@ export default class PersonsMap extends Component {
       this.transferValueX,
       {
         toValue: 1,
-        duration: 200,
+        duration: this.azimuthUpdateIntervall,
         easing: Easing.linear
       }
     ).start()
@@ -101,7 +101,7 @@ export default class PersonsMap extends Component {
       this.transferValueY,
       {
         toValue: 1,
-        duration: 200,
+        duration: this.azimuthUpdateIntervall,
         easing: Easing.linear
       }
     ).start()
@@ -131,19 +131,33 @@ export default class PersonsMap extends Component {
     });
 
     this.interval = setInterval(() => {
-      let current = Math.round(this.currentAzimuth)
-      if (this.lastDispatchedAzimuth == undefined ||
-          this.lastDispatchedAzimuth != current)
-      {
-        this.props.onAzimuthUpdated(current)
-        this.lastDispatchedAzimuth = current
+      this.props.onAzimuthUpdated(this.currentAzimuth)
+      this.lastDispatchedAzimuth = this.currentAzimuth
+    
+    // **** Move orb locations, comment for stationary orbs ****
+    this.persons.map((person, i) =>
+    {
+      if (person.distance > 120) {
+        person.moveDir = 0
       }
-    }, this.azimuthUpdateIntervall)
+      else if (person.distance < 10) {
+        person.moveDir = 1
+      }
+
+      if (person.moveDir == 1) {
+        person.distance = person.distance + 0.1
+        person.angle = person.angle + 0.2
+      } 
+      else if (person.moveDir == 0) {
+        person.distance = person.distance - 0.1
+        person.angle = person.angle - 0.5
+      }
+    })}, this.azimuthUpdateIntervall)
   }
+
   unwatchAzimuth(){
     navigator.geolocation.clearWatch(this.watchID)
   }
-
 
   refreshView() {
     let token = this.props.authentication.token
@@ -187,24 +201,25 @@ export default class PersonsMap extends Component {
       })
       person.oldX = x
       person.oldY = y
+      let size = this.orbSizeDividedByTwo*2
       return (
-        <Animated.Image
+        <Animated.View
+          key={i}
           style={{
             transform: [{translateX: transformX}, {translateY: transformY}],
             position:'absolute',
-            zIndex:1}}
-          key={i}
-          source={require('./img/orb.png')}
+            zIndex:1,
+            height:size,
+            width:size,
+          }}
           >
-          <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute', zIndex:1}}>
+          <TouchableHighlight onPress={() => this._onPressButton(i)} key={i} style={{position:'absolute'}}>
             <Image
               source={require('./img/orb.png')}
             />
           </TouchableHighlight>
-        </Animated.Image>
+        </Animated.View>
         )
-
-
     })
 
     return (
