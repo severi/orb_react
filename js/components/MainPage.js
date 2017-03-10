@@ -10,7 +10,7 @@ import UnauthenticatedPage from '../containers/UnauthenticatedPage'
 
 export default class MainPage extends Component {
   render() {
-    if (this.props.authentication.loggedIn == false && false) {
+    if (this.props.authentication.loggedIn == false) {
       return (
         < UnauthenticatedPage / >
       );

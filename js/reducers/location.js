@@ -5,7 +5,10 @@ type State = {
     azimuth: ?number,
 }
 
-import {LOCATION_UPDATED, AZIMUTH_UPDATED} from '../actions'
+import {ATTEMPT_UPDATE_LOCATION,
+        UPDATE_LOCATION_SUCCESSFUL,
+        UPDATE_LOCATION_FAILED,
+        AZIMUTH_UPDATED} from '../actions'
 
 
 const initialState = {
@@ -17,11 +20,11 @@ const initialState = {
 
 const location = (state: State = initialState, action: Object) => {
   switch (action.type) {
-    case LOCATION_UPDATED:
+    case ATTEMPT_UPDATE_LOCATION:
       return Object.assign({}, state,
       {
-        longitude: action.longitude,
-        latitude: action.latitude,
+        longitude: action.location.longitude,
+        latitude: action.location.latitude,
       })
     case AZIMUTH_UPDATED:
       return Object.assign({}, state,

@@ -1,8 +1,9 @@
 /* @flow */
 
 type Person = {
+  id: number,
   distance: number,
-  angle: number,
+  bearing: number,
 }
 
 import React, { Component, PropTypes } from 'react';
@@ -46,12 +47,13 @@ export default class PersonsMap extends Component {
   azimuthUpdateIntervall = 100
   orbSizeDividedByTwo = 25
 
-  persons = [
-    {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
-    {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
-    {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
-    {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
-  ]
+
+  // persons = [
+  //   {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
+  //   {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
+  //   {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
+  //   {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
+  // ]
 
   constructor() {
     super()
@@ -111,7 +113,8 @@ export default class PersonsMap extends Component {
     let geolocationSettings = {enableHighAccuracy: true, timeout: 2000, maximumAge: 1000, distanceFilter: 1}
     this.watchID = navigator.geolocation.watchPosition(
       (position: Object) => {
-        this.props.onLocationUpdated(position)
+        let token = this.props.authentication.token
+        this.props.onLocationUpdated(token, position)
       },
       (error: Object) => {
         console.log(error)
@@ -130,29 +133,16 @@ export default class PersonsMap extends Component {
       this.currentAzimuth = e.newAzimuth
     });
 
-    this.interval = setInterval(() => {
-      this.props.onAzimuthUpdated(this.currentAzimuth)
-      this.lastDispatchedAzimuth = this.currentAzimuth
-    
-    // **** Move orb locations, comment for stationary orbs ****
-    this.persons.map((person, i) =>
-    {
-      if (person.distance > 120) {
-        person.moveDir = 0
-      }
-      else if (person.distance < 10) {
-        person.moveDir = 1
-      }
+    // this.interval = setInterval(() => {
+    //   this.props.onAzimuthUpdated(this.currentAzimuth)
+    //   this.lastDispatchedAzimuth = this.currentAzimuth
+    // }, this.azimuthUpdateIntervall)
 
-      if (person.moveDir == 1) {
-        person.distance = person.distance + 0.1
-        person.angle = person.angle + 0.2
-      } 
-      else if (person.moveDir == 0) {
-        person.distance = person.distance - 0.1
-        person.angle = person.angle - 0.5
-      }
-    })}, this.azimuthUpdateIntervall)
+
+    this.interval = setInterval(() => {
+      this.refreshView()
+    }, this.azimuthUpdateIntervall*100)
+
   }
 
   unwatchAzimuth(){
@@ -164,17 +154,17 @@ export default class PersonsMap extends Component {
     this.props.onViewRefresh(token)
   }
 
-  _onPressButton(i) {
-    console.log("You tapped orb " + i + ', message: ' + this.persons[i].message)
-    Alert.alert(
-       'Orb ' + i + ' pressed',
-       this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
-       [
-          {text: 'Block'},
-          {text: 'Friend'},
-       ]
-    )
-  }
+  // _onPressButton(i) {
+  //   console.log("You tapped orb " + i + ', message: ' + this.persons[i].message)
+  //   Alert.alert(
+  //      'Orb ' + i + ' pressed',
+  //      this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
+  //      [
+  //         {text: 'Block'},
+  //         {text: 'Friend'},
+  //      ]
+  //   )
+  // }
 
   _onPressLogo() {
     console.log("You tapped the LOGO!");
@@ -182,25 +172,28 @@ export default class PersonsMap extends Component {
 
   tranformToCoordinates(person: Person) {
     const azimuth = this.props.location.azimuth
-    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.angle - azimuth))) * (person.distance/150)
-    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.angle - azimuth))) * (person.distance/150)
+    const distanceScale = 300
+    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.bearing - azimuth))) * (person.distance/distanceScale)
+    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.bearing - azimuth))) * (person.distance/distanceScale)
     return {x,y}
   }
 
   render() {
-    const visualizeNearbyOrbs = this.persons.map((person, i) =>
+    const visualizeNearbyOrbs = this.props.persons.map((person, i) =>
     {
       const {x, y} = this.tranformToCoordinates(person)
+      console.log(x)
+      console.log(y)
       const transformX = this.transferValueX.interpolate({
         inputRange: [0, 1],
-        outputRange: [person.oldX, x]
+        outputRange: [x-1, x]
       })
       const transformY = this.transferValueY.interpolate({
         inputRange: [0, 1],
-        outputRange: [person.oldY, y]
+        outputRange: [y-1, y]
       })
-      person.oldX = x
-      person.oldY = y
+      // person.oldX = x
+      // person.oldY = y
       let size = this.orbSizeDividedByTwo*2
       return (
         <Animated.View
@@ -240,11 +233,9 @@ export default class PersonsMap extends Component {
 
 PersonsMap.propTypes = {
   persons: PropTypes.arrayOf(PropTypes.shape({
-    lastupdate: PropTypes.string.isRequired,
-    gender: PropTypes.string.isRequired,
-    age: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
+    distance: PropTypes.number.isRequired,
+    bearing: PropTypes.number.isRequired,
   })),
   onViewRefresh: PropTypes.func.isRequired,
   onLocationUpdated: PropTypes.func.isRequired,

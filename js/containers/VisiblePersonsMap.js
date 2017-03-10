@@ -24,10 +24,10 @@ const mapDispatchToProps = (dispatch) => {
     onViewRefresh: (token: string) => {
       dispatch(refreshNearbyPersons(token))
     },
-    onLocationUpdated: (position: PositionObject) => {
+    onLocationUpdated: (token: string, position: PositionObject) => {
       let longitude= position.coords.longitude
       let latitude= position.coords.latitude
-      dispatch(updateLocation(longitude, latitude))
+      dispatch(updateLocation(token, longitude, latitude))
     },
     onAzimuthUpdated: (azimuth: number) => {
       dispatch(updateAzimuth(azimuth))

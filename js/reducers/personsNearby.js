@@ -2,11 +2,9 @@
 
 type Person =
 {
-  lastupdate: string,
-  gender: string,
-  age: number,
-  name: string,
-  _id: string
+  id: string,
+  distance: number,
+  bearing: number,
 }
 type State = Array<Person>
 
@@ -25,7 +23,7 @@ const personsNearby = (state: State = [], action: Object) => {
       console.log(action.payload)
       return action.payload
     case REFRESH_NEARBY_PERSONS_FAILED:
-      return action.state
+      return state
     default:
       return state
   }
