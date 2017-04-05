@@ -133,6 +133,7 @@ export default class PersonsMap extends Component {
       this.currentAzimuth = e.newAzimuth
     });
 
+    // TODO: do not use redux for this, do this directly via refreshing the view so the state wont get spammed = easier debugging
     // this.interval = setInterval(() => {
     //   this.props.onAzimuthUpdated(this.currentAzimuth)
     //   this.lastDispatchedAzimuth = this.currentAzimuth
@@ -154,17 +155,19 @@ export default class PersonsMap extends Component {
     this.props.onViewRefresh(token)
   }
 
-  // _onPressButton(i) {
-  //   console.log("You tapped orb " + i + ', message: ' + this.persons[i].message)
-  //   Alert.alert(
-  //      'Orb ' + i + ' pressed',
-  //      this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
-  //      [
-  //         {text: 'Block'},
-  //         {text: 'Friend'},
-  //      ]
-  //   )
-  // }
+  _onPressButton(i) {
+    let token = this.props.authentication.token
+    this.props.onGetUserInforButtonPressed(token, this.props.persons[i].id)
+    console.log("You tapped orb " + i + ', id: ' + this.props.persons[i].id)
+    // Alert.alert(
+    //    'Orb ' + i + ' pressed',
+    //    this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
+    //    [
+    //       {text: 'Block'},
+    //       {text: 'Friend'},
+    //    ]
+    // )
+  }
 
   _onPressLogo() {
     console.log("You tapped the LOGO!");
@@ -240,6 +243,7 @@ PersonsMap.propTypes = {
   onViewRefresh: PropTypes.func.isRequired,
   onLocationUpdated: PropTypes.func.isRequired,
   onAzimuthUpdated: PropTypes.func.isRequired,
+  onGetUserInforButtonPressed: PropTypes.func.isRequired,
 };
 
 

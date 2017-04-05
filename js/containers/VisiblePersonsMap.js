@@ -8,7 +8,7 @@ type PositionObject = {
 
 import { connect } from 'react-redux'
 import PersonsMap from '../components/PersonsMap'
-import { refreshNearbyPersons, updateLocation, updateAzimuth } from '../actions'
+import { refreshNearbyPersons, updateLocation, updateAzimuth, getUserInfo } from '../actions'
 
 
 const mapStateToProps = (state) => {
@@ -31,6 +31,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     onAzimuthUpdated: (azimuth: number) => {
       dispatch(updateAzimuth(azimuth))
+    },
+    onGetUserInforButtonPressed: (token: string, id: number) => {
+      dispatch(getUserInfo(token, id))
     },
   }
 }

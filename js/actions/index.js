@@ -6,8 +6,6 @@ export const ATTEMPT_REFRESH_NEARBY_PERSONS = "ATTEMPT_REFRESH_NEARBY_PERSONS"
 export const REFRESH_NEARBY_PERSONS_SUCCESSFUL = "REFRESH_NEARBY_PERSONS_SUCCESSFUL"
 export const REFRESH_NEARBY_PERSONS_FAILED = "REFRESH_NEARBY_PERSONS_FAILED"
 
-
-
 const getConfig = (token: ?string) => {
   let config = {
       baseURL: 'http://10.0.0.191:8080',
@@ -37,6 +35,39 @@ export const refreshNearbyPersons = (token: string) => {
       })
     })
 
+  }
+}
+
+
+export const ATTEMPT_GET_USER_INFO = "ATTEMPT_GET_USER_INFO"
+export const GET_USER_INFO_SUCCESSFUL = "GET_USER_INFO_SUCCESSFUL"
+export const GET_USER_INFO_FAILED = "GET_USER_INFO_FAILED"
+
+export const getUserInfo = (token: string, id: number) => {
+  return (dispatch: Function) =>{
+    dispatch({type: ATTEMPT_GET_USER_INFO})
+
+
+    let config = {
+      params: {
+//        id : id // TODO: get this working instead of hardcoding below
+        _id: "58e48d3c249764002b1e3f49"
+      },
+      ...getConfig(token)
+    }
+
+    console.log(config)
+    axios.get('/user/user_information/', config)
+    .then(function (response) {
+      dispatch({type: GET_USER_INFO_SUCCESSFUL,
+        payload: response.data
+      })
+    })
+    .catch(error => {
+      dispatch({type: GET_USER_INFO_FAILED,
+        error
+      })
+    })
   }
 }
 
