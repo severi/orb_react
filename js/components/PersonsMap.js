@@ -1,9 +1,13 @@
 /* @flow */
 
-type Person = {
-  id: number,
+type Person =
+{
+  id: string,
   distance: number,
   bearing: number,
+  oldDistance: number,
+  oldBearing: number,
+  user_info: ?Object,
 }
 
 import React, { Component, PropTypes } from 'react';
@@ -31,6 +35,10 @@ type AzimuthEvent = {
 
 export default class PersonsMap extends Component {
 
+  // state: {
+  //   animationRequired: boolean
+  // }
+
   watchID: ?number = null
   currentAzimuth: number = 0
   lastDispatchedAzimuth: ?number = undefined
@@ -43,6 +51,7 @@ export default class PersonsMap extends Component {
 
   transferValueX: Animated.Value = null
   transferValueY: Animated.Value = null
+  animationRequired: boolean = false
 
   azimuthUpdateIntervall = 100
   orbSizeDividedByTwo = 25
@@ -76,8 +85,18 @@ export default class PersonsMap extends Component {
   }
 
   componentDidUpdate() {
-    this.transferX()
-    this.transferY()
+    if (this.animationRequired){ // TODO: probably we need different booleans for azimuthUpdate and persons update, when azi updates oldX should be same as x?
+      console.log("HILIPATI HEI, papapapa")
+      this.transferX()
+      this.transferY()
+    }
+    this.animationRequired=false
+  }
+
+  componentWillUpdate(nextProps: Object, nextState: Object) {
+    if (this.props.persons != nextProps.persons){
+      this.animationRequired=true
+    }
   }
 
   componentWillUnmount() {
@@ -91,7 +110,7 @@ export default class PersonsMap extends Component {
       this.transferValueX,
       {
         toValue: 1,
-        duration: this.azimuthUpdateIntervall,
+        duration: this.azimuthUpdateIntervall*60, //TODO remove 60
         easing: Easing.linear
       }
     ).start()
@@ -103,7 +122,7 @@ export default class PersonsMap extends Component {
       this.transferValueY,
       {
         toValue: 1,
-        duration: this.azimuthUpdateIntervall,
+        duration: this.azimuthUpdateIntervall*60, //TODO remove 60
         easing: Easing.linear
       }
     ).start()
@@ -178,25 +197,31 @@ export default class PersonsMap extends Component {
     const distanceScale = 300
     let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.bearing - azimuth))) * (person.distance/distanceScale)
     let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.bearing - azimuth))) * (person.distance/distanceScale)
-    return {x,y}
+
+    let oldX = this.origin.x + (this.origin.y * Math.sin(this.radians(person.oldBearing - azimuth))) * (person.oldDistance/distanceScale)
+    let oldY = this.origin.y - (this.origin.y * Math.cos(this.radians(person.oldBearing - azimuth))) * (person.oldDistance/distanceScale)
+
+    return {x,y, oldX, oldY}
   }
 
   render() {
     const visualizeNearbyOrbs = this.props.persons.map((person, i) =>
     {
-      const {x, y} = this.tranformToCoordinates(person)
-      console.log(x)
-      console.log(y)
+      const {x, y, oldX, oldY} = this.tranformToCoordinates(person)
+
+      if (y!= oldY || x != oldX){
+        console.log("HEPIPEEEE")
+        console.log("x:"+x+" y:"+y+" oldX:"+oldX+" oldY:"+oldY)
+      }
+
       const transformX = this.transferValueX.interpolate({
         inputRange: [0, 1],
-        outputRange: [x-1, x]
+        outputRange: [oldX, x]
       })
       const transformY = this.transferValueY.interpolate({
         inputRange: [0, 1],
-        outputRange: [y-1, y]
+        outputRange: [oldY, y]
       })
-      // person.oldX = x
-      // person.oldY = y
       let size = this.orbSizeDividedByTwo*2
       return (
         <Animated.View

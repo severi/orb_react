@@ -5,7 +5,9 @@ type Person =
   id: string,
   distance: number,
   bearing: number,
-  // user_info: Object // TODO
+  oldDistance: number,
+  oldBearing: number,
+  user_info: ?Object,
 }
 type State = Array<Person>
 
@@ -19,6 +21,30 @@ import {
 } from '../actions'
 
 
+function embedExistingInfo(person, existingPersons){
+  person.oldDistance = person.distance
+  person.oldBearing = person.bearing
+  person.user_info = null
+
+  for (var i = 0; i < existingPersons.length; i++) {
+    let existingPerson = existingPersons[i]
+    if (existingPerson.id == person.id){
+      person.oldDistance = existingPerson.distance
+      person.oldBearing = existingPerson.bearing
+      if (existingPerson.user_info != null)
+        person.user_info = {...existingPerson.user_info}
+    }
+  }
+}
+
+// TODO: implement persons as a dictionary instead of array
+function updatePersons(updated, current){
+  for (var i = 0; i < updated.length; i++) {
+    embedExistingInfo(updated[i], current)
+  }
+  return updated
+}
+
 const personsNearby = (state: State = [], action: Object) => {
   switch (action.type) {
     case ATTEMPT_REFRESH_NEARBY_PERSONS:
@@ -27,7 +53,8 @@ const personsNearby = (state: State = [], action: Object) => {
       console.log(action.payload)
       // As stated below. In this case the payload should not directly replace the state, but merge updates to it
       // i.e. keep the user_information
-      return action.payload
+      let newState = updatePersons(action.payload, state)
+      return newState
     case REFRESH_NEARBY_PERSONS_FAILED:
       return state
 //
