@@ -125,12 +125,3 @@ export const updateLocation = (token: string, longitude: number, latitude : numb
   }
 
 }
-
-export const AZIMUTH_UPDATED = "AZIMUTH_UPDATED"
-export const updateAzimuth = (azimuth: number) => {
-  return {
-    type: AZIMUTH_UPDATED,
-    azimuth
-  }
-}
-

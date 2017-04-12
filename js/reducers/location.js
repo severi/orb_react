@@ -2,13 +2,11 @@
 type State = {
     longitude: ?number,
     latitude: ?number,
-    azimuth: ?number,
 }
 
 import {ATTEMPT_UPDATE_LOCATION,
         UPDATE_LOCATION_SUCCESSFUL,
-        UPDATE_LOCATION_FAILED,
-        AZIMUTH_UPDATED} from '../actions'
+        UPDATE_LOCATION_FAILED} from '../actions'
 
 
 const initialState = {
@@ -25,11 +23,6 @@ const location = (state: State = initialState, action: Object) => {
       {
         longitude: action.location.longitude,
         latitude: action.location.latitude,
-      })
-    case AZIMUTH_UPDATED:
-      return Object.assign({}, state,
-      {
-        azimuth: action.azimuth,
       })
     default:
       return state

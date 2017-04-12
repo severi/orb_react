@@ -35,12 +35,13 @@ type AzimuthEvent = {
 
 export default class PersonsMap extends Component {
 
-  // state: {
-  //   animationRequired: boolean
-  // }
+  state: {
+    currentAzimuth: number,
+    previousAzimuth : number,
+  }
 
   watchID: ?number = null
-  currentAzimuth: number = 0
+  temporaryAzimuth: number = 0
   lastDispatchedAzimuth: ?number = undefined
   interval: ?number = undefined
 
@@ -51,18 +52,12 @@ export default class PersonsMap extends Component {
 
   transferValueX: Animated.Value = null
   transferValueY: Animated.Value = null
-  animationRequired: boolean = false
+  personsUpdated: boolean = false
+  azimuthUpdated: boolean = false
 
-  azimuthUpdateIntervall = 100
+  azimuthUpdateInterval = 100
+  personsUpdateInterval = 5000
   orbSizeDividedByTwo = 25
-
-
-  // persons = [
-  //   {distance: 100, angle:10, message: 'Jorma täällä!', age: 55, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
-  //   {distance: 15, angle:20, message: 'Irma ihan märkänä ;) Tarttis rakoon vähän täytettä..', age: 32, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
-  //   {distance: 30, angle:190, message: 'Minttu täällä hei :)', age: 19, gender: 'female', moveDir: 0, oldX: 0, oldY: 0},
-  //   {distance: 80, angle:350, message: 'Pussydestroyah', age: 88, gender: 'male', moveDir: 1, oldX: 0, oldY: 0},
-  // ]
 
   constructor() {
     super()
@@ -73,6 +68,10 @@ export default class PersonsMap extends Component {
     }
     this.transferValueX = new Animated.Value(0)
     this.transferValueY = new Animated.Value(0)
+    this.state = {
+      previousAzimuth: 0,
+      currentAzimuth: 0,
+    }
   }
 
   radians(degrees:number) {
@@ -85,17 +84,13 @@ export default class PersonsMap extends Component {
   }
 
   componentDidUpdate() {
-    if (this.animationRequired){ // TODO: probably we need different booleans for azimuthUpdate and persons update, when azi updates oldX should be same as x?
-      console.log("HILIPATI HEI, papapapa")
-      this.transferX()
-      this.transferY()
-    }
-    this.animationRequired=false
+    this.transferX()
+    this.transferY()
   }
 
   componentWillUpdate(nextProps: Object, nextState: Object) {
     if (this.props.persons != nextProps.persons){
-      this.animationRequired=true
+      this.personsUpdated=true
     }
   }
 
@@ -110,7 +105,7 @@ export default class PersonsMap extends Component {
       this.transferValueX,
       {
         toValue: 1,
-        duration: this.azimuthUpdateIntervall*60, //TODO remove 60
+        duration: this.azimuthUpdateInterval,
         easing: Easing.linear
       }
     ).start()
@@ -122,7 +117,7 @@ export default class PersonsMap extends Component {
       this.transferValueY,
       {
         toValue: 1,
-        duration: this.azimuthUpdateIntervall*60, //TODO remove 60
+        duration: this.azimuthUpdateInterval,
         easing: Easing.linear
       }
     ).start()
@@ -149,19 +144,21 @@ export default class PersonsMap extends Component {
   watchAzimuth(){
     NativeModules.CompassAndroid.startTracking();
     DeviceEventEmitter.addListener('azimuthChanged', e => {
-      this.currentAzimuth = e.newAzimuth
+      this.temporaryAzimuth = e.newAzimuth
     });
 
-    // TODO: do not use redux for this, do this directly via refreshing the view so the state wont get spammed = easier debugging
-    // this.interval = setInterval(() => {
-    //   this.props.onAzimuthUpdated(this.currentAzimuth)
-    //   this.lastDispatchedAzimuth = this.currentAzimuth
-    // }, this.azimuthUpdateIntervall)
+    this.interval = setInterval(() => {
+      this.setState({
+        previousAzimuth: this.state.currentAzimuth,
+        currentAzimuth: this.temporaryAzimuth
+      })
+      this.azimuthUpdated=true
+    }, this.azimuthUpdateInterval)
 
 
     this.interval = setInterval(() => {
       this.refreshView()
-    }, this.azimuthUpdateIntervall*100)
+    }, this.personsUpdateInterval)
 
   }
 
@@ -193,14 +190,26 @@ export default class PersonsMap extends Component {
   }
 
   tranformToCoordinates(person: Person) {
-    const azimuth = this.props.location.azimuth
+    let oldAzimuth = this.state.currentAzimuth
+    if (this.azimuthUpdated){
+      oldAzimuth = this.state.previousAzimuth
+      this.azimuthUpdated = false
+    }
+
+    let oldBearing = person.bearing
+    let oldDistance = person.distance
+    if (this.personsUpdated){
+      oldBearing = person.oldBearing
+      oldDistance = person.oldDistance
+      this.personsUpdated=false
+    }
+
     const distanceScale = 300
-    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.bearing - azimuth))) * (person.distance/distanceScale)
-    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.bearing - azimuth))) * (person.distance/distanceScale)
+    let x = this.origin.x + (this.origin.y * Math.sin(this.radians(person.bearing - this.state.currentAzimuth))) * (person.distance/distanceScale)
+    let y = this.origin.y - (this.origin.y * Math.cos(this.radians(person.bearing - this.state.currentAzimuth))) * (person.distance/distanceScale)
 
-    let oldX = this.origin.x + (this.origin.y * Math.sin(this.radians(person.oldBearing - azimuth))) * (person.oldDistance/distanceScale)
-    let oldY = this.origin.y - (this.origin.y * Math.cos(this.radians(person.oldBearing - azimuth))) * (person.oldDistance/distanceScale)
-
+    let oldX = this.origin.x + (this.origin.y * Math.sin(this.radians(oldBearing - oldAzimuth))) * (oldDistance/distanceScale)
+    let oldY = this.origin.y - (this.origin.y * Math.cos(this.radians(oldBearing - oldAzimuth))) * (oldDistance/distanceScale)
     return {x,y, oldX, oldY}
   }
 
@@ -208,12 +217,6 @@ export default class PersonsMap extends Component {
     const visualizeNearbyOrbs = this.props.persons.map((person, i) =>
     {
       const {x, y, oldX, oldY} = this.tranformToCoordinates(person)
-
-      if (y!= oldY || x != oldX){
-        console.log("HEPIPEEEE")
-        console.log("x:"+x+" y:"+y+" oldX:"+oldX+" oldY:"+oldY)
-      }
-
       const transformX = this.transferValueX.interpolate({
         inputRange: [0, 1],
         outputRange: [oldX, x]
@@ -267,7 +270,6 @@ PersonsMap.propTypes = {
   })),
   onViewRefresh: PropTypes.func.isRequired,
   onLocationUpdated: PropTypes.func.isRequired,
-  onAzimuthUpdated: PropTypes.func.isRequired,
   onGetUserInforButtonPressed: PropTypes.func.isRequired,
 };
 
