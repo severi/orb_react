@@ -173,16 +173,18 @@ export default class PersonsMap extends Component {
 
   _onPressButton(i) {
     let token = this.props.authentication.token
-    this.props.onGetUserInforButtonPressed(token, this.props.persons[i].id)
     console.log("You tapped orb " + i + ', id: ' + this.props.persons[i].id)
-    // Alert.alert(
-    //    'Orb ' + i + ' pressed',
-    //    this.persons[i].gender + ', ' + this.persons[i].age + '\n\n' + 'Message: ' + this.persons[i].message,
-    //    [
-    //       {text: 'Block'},
-    //       {text: 'Friend'},
-    //    ]
-    // )
+
+    // TODO: pitää jotenkin odottaa että vastaus tulee ja kun se on tullut niin avata pop-uppi
+
+    Alert.alert(
+       'Orb ' + i + ' pressed',
+       this.props.persons[i].user_info.gender + ', ' + this.props.persons[i].user_info.age + '\n\n' + 'Message: ' + this.props.persons[i].user_info.message,
+       [
+          {text: 'Block'},
+          {text: 'Friend'},
+       ]
+    )
   }
 
   _onPressLogo() {
